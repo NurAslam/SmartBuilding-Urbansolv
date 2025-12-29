@@ -70,14 +70,8 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            echo "==> pm2 reload/start (uvicorn main:app)"
-            START_CMD="bash -lc '. .venv/bin/activate && python -m uvicorn main:app --host 0.0.0.0 --port ${APP_PORT}'"
-
-            if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-              pm2 reload "$APP_NAME" --update-env
-            else
-              pm2 start "$START_CMD" --name "$APP_NAME"
-            fi
-
+            echo "==> reload pm2 via ecosystem"
+            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
             pm2 save
+
             echo "==> done"

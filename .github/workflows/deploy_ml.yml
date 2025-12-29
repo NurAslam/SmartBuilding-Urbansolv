@@ -54,6 +54,7 @@ jobs:
             set -e
 
             APP_DIR="/home/ml/smartbuilding-primestep"
+            PM2_BIN="/home/ml/.nvm/versions/node/v20.19.6/bin/pm2"
             APP_NAME="${{ secrets.PM2_APP_NAME }}"
             APP_PORT="${{ secrets.APP_PORT }}"
 
@@ -71,7 +72,7 @@ jobs:
             pip install -r requirements.txt
 
             echo "==> reload pm2 via ecosystem"
-            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
-            pm2 save
+            $PM2_BIN reload ecosystem.config.js || $PM2_BIN start ecosystem.config.js
+            $PM2_BIN save
 
             echo "==> done"

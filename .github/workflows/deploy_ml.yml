@@ -1,4 +1,4 @@
-name: CI/CD FastAPI (PM2)
+name: CI/CD FastAPI
 
 on:
   push:
@@ -10,11 +10,38 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to Server (SSH + PM2)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Prepare deploy package
+        run: |
+          mkdir -p deploy_pkg
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "__pycache__" \
+            --exclude "*.pyc" \
+            --exclude "myenv" \
+            --exclude ".venv" \
+            --exclude ".env" \
+            ./ deploy_pkg/
+
+      - name: Upload files to server (SCP)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "deploy_pkg/*"
+          target: "/home/ml/smartbuilding-primestep"
+          strip_components: 1
+          overwrite: true
+
+      - name: Install deps & reload PM2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -32,14 +59,6 @@ jobs:
 
             echo "==> cd to app dir: $APP_DIR"
             cd "$APP_DIR"
-
-            echo "==> ensure git remote origin"
-            git remote -v
-
-
-            echo "==> update code"
-            git fetch --all --prune
-            git reset --hard origin/main
 
             echo "==> ensure venv"
             if [ ! -d ".venv" ]; then

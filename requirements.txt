@@ -5,4 +5,4 @@ requests>=2.28
 python-dotenv>=1.0
 joblib
 pandas
-scikit-learn
+scikit-learn==1.6.1

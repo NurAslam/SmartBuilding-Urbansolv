@@ -38,9 +38,7 @@ Kedua peran ini BERBEDA secara konseptual, bukan double counting.
 """
 import math
 from dataclasses import dataclass
-from .models import SensorData, Comfort, ACControl
-
-
+from rule_engine.models import SensorData, Comfort, ACControl
 # ============================================================================
 # DEFAULT ASSUMPTIONS (jika tidak ada sensor)
 # ============================================================================

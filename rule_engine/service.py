@@ -48,12 +48,21 @@ async def analyze_comfort(sensor_data: SensorData) -> ComfortAnalysisResponse:
         reason = llm_service.generate_reason(sensor_data, rule_result)
 
         # Step 3: Build response
+        from .models import InputSensor
+        input_sensor = InputSensor(
+            temp=sensor_data.temp,
+            noise=sensor_data.noise,
+            light_level=sensor_data.light_level,
+            occupancy=sensor_data.occupancy
+        )
+        
         response = ComfortAnalysisResponse(
             Comfort=rule_result.comfort,
             Recommendation=Recommendation(
                 ac_control=rule_result.ac_control,
                 reason=reason
-            )
+            ),
+            Input_sensor=input_sensor
         )
 
         return response

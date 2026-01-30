@@ -3,52 +3,27 @@ import time
 import os
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
-<<<<<<< HEAD
 from rule_engine.models import SensorData, ComfortAnalysisResponse, Recommendation
-=======
-from rule_engine.models import SensorData, ComfortAnalysisResponse, Recommendation, InputSensor
->>>>>>> save-detached
 from rule_engine.rule_engine import evaluate
 from rule_engine.llm_service import LLMService
 
 load_dotenv()
 
-<<<<<<< HEAD
-=======
-# MQTT Configuration from .env
->>>>>>> save-detached
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME", None)
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", None)
 
-<<<<<<< HEAD
 MQTT_TOPICS_INPUT = [topic.strip() for topic in os.getenv('MQTT_TOPIC_INPUT',"").split(",") if topic.strip()]
-=======
-# Multiple input topics from .env (comma-separated, supports wildcards like topic/#)
-MQTT_TOPICS_INPUT = [topic.strip() for topic in os.getenv("MQTT_TOPIC_INPUT", "").split(",") if topic.strip()]
-# Extract base topic names (remove /# wildcard) for data storage
->>>>>>> save-detached
 MQTT_BASE_TOPICS = [topic.replace("/#", "").replace("/*", "") for topic in MQTT_TOPICS_INPUT]
 MQTT_TOPIC_OUTPUT = os.getenv("MQTT_TOPIC_OUTPUT", "response_LLM")
 FETCH_INTERVAL = int(os.getenv("FETCH_INTERVAL", 60))  # seconds
 DATA_COLLECTION_TIME = int(os.getenv("DATA_COLLECTION_TIME", 5))  # seconds to wait for data
 
-<<<<<<< HEAD
 llm_service = LLMService()
 
 persistent_data = {topic: None for topic in MQTT_BASE_TOPICS}
 
-=======
-# Initialize LLM service (hanya untuk narasi)
-llm_service = LLMService()
-
-# Global persistent storage untuk data sensor (retain data antar fetch)
-# Berguna untuk data event-based seperti entrance yang hanya kirim saat ada perubahan
-persistent_data = {topic: None for topic in MQTT_BASE_TOPICS}
-
-
->>>>>>> save-detached
 def analyze_comfort(sensor_data: SensorData) -> ComfortAnalysisResponse:
     """
     Analisis tingkat kenyamanan ruangan berdasarkan data sensor.
@@ -63,7 +38,6 @@ def analyze_comfort(sensor_data: SensorData) -> ComfortAnalysisResponse:
     # Step 2: LLM - Generate narasi/reason saja
     reason = llm_service.generate_reason(sensor_data, rule_result)
     
-<<<<<<< HEAD
     # Step 3: Build response
     response = ComfortAnalysisResponse(
         Comfort=rule_result.comfort,
@@ -71,22 +45,6 @@ def analyze_comfort(sensor_data: SensorData) -> ComfortAnalysisResponse:
             ac_control=rule_result.ac_control,
             reason=reason
         )
-=======
-    # Step 3: Build response with Input_sensor
-    input_sensor = InputSensor(
-        temp=sensor_data.temp,
-        noise=sensor_data.noise,
-        light_level=sensor_data.light_level,
-        occupancy=sensor_data.occupancy
-    )
-    
-    response = ComfortAnalysisResponse(
-        Comfort=rule_result.comfort,
-        Recommendation=Recommendation(
-            reason=reason
-        ),
-        Input_sensor=input_sensor
->>>>>>> save-detached
     )
     
     return response
@@ -175,12 +133,7 @@ def fetch_and_process():
             temp=combined_data.get("temp", combined_data.get("temperature")),
             noise=combined_data.get("noise", combined_data.get("noise_level", 40)),
             light_level=combined_data.get("light_level", combined_data.get("lux", 300)),
-<<<<<<< HEAD
             occupancy=combined_data.get("occupancy", 1)
-=======
-            occupancy=combined_data.get("occupancy", 1),
-            fan=combined_data.get("fan", "auto")
->>>>>>> save-detached
         )
         
         print(f"[Process] Combined sensor data: {sensor_data}")
@@ -189,45 +142,17 @@ def fetch_and_process():
         response = analyze_comfort(sensor_data)
         response_json = response.model_dump()
         
-<<<<<<< HEAD
         # Publish response ke topic: response_LLM/device-1/data
         publish_topic = f"{MQTT_TOPIC_OUTPUT}/device-1/data"
         client.reconnect()
         result = client.publish(publish_topic, json.dumps(response_json, indent=2))
-=======
-        # Extract ac_control untuk publish terpisah
-        ac_control = response_json.get("Recommendation", {}).get("ac_control", {})
-        
-        # Publish response ke topic: response_LLM/device-1/data
-        publish_topic = f"{MQTT_TOPIC_OUTPUT}/device-1/data"
-        ac_control_topic = f"{MQTT_TOPIC_OUTPUT}/device-1/ac_control"
-        
-        client.reconnect()
-        
-        # Publish main response
-        result = client.publish(publish_topic, json.dumps(response_json, indent=2))
-        
-        # Publish ac_control ke topic terpisah
-        result_ac = client.publish(ac_control_topic, json.dumps(ac_control, indent=2))
-        
->>>>>>> save-detached
         client.disconnect()
         
         if result.rc == mqtt.MQTT_ERR_SUCCESS:
             print(f"[MQTT] Response published to '{publish_topic}':")
             print(json.dumps(response_json, indent=2))
         else:
-<<<<<<< HEAD
             print(f"[MQTT] Failed to publish, error: {result.rc}")
-=======
-            print(f"[MQTT] Failed to publish response, error: {result.rc}")
-        
-        if result_ac.rc == mqtt.MQTT_ERR_SUCCESS:
-            print(f"[MQTT] AC Control published to '{ac_control_topic}':")
-            print(json.dumps(ac_control, indent=2))
-        else:
-            print(f"[MQTT] Failed to publish ac_control, error: {result_ac.rc}")
->>>>>>> save-detached
             
     except Exception as e:
         print(f"[Fetch] Error: {e}")
@@ -236,10 +161,6 @@ def fetch_and_process():
         except:
             pass
 
-<<<<<<< HEAD
-=======
-
->>>>>>> save-detached
 def main():
     """Main function - fetch data setiap interval."""
     print("=" * 60)
@@ -260,8 +181,4 @@ def main():
             time.sleep(FETCH_INTERVAL)
             
     except KeyboardInterrupt:
-<<<<<<< HEAD
         print("\n[Main] Shutting down...")
-=======
-        print("\n[Main] Shutting down...")
->>>>>>> save-detached

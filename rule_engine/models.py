@@ -3,6 +3,13 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 
+class SensorData(BaseModel):
+    """Input payload dari sensor lingkungan ruangan."""
+    hum: float = Field(..., description="Humidity (%)")
+    temp: float = Field(..., description="Temperature (°C)")
+    noise: float = Field(..., description="Noise level (dB)")
+    light_level: float = Field(..., description="Light level (lux)")
+    occupancy: int = Field(..., description="Number of occupants")
 
 
 class InputSensor(BaseModel):
@@ -22,18 +29,8 @@ class Comfort(BaseModel):
 
 
 # Definisi tipe yang diizinkan untuk AC Control
-ACMode = Literal["cool", "fan", "dry", "heat", "off"]
+ACMode = Literal["cool", "fan", "dry", "heat"]
 ACFanSpeed = Literal["low", "medium", "high", "auto", "quiet"]
-
-
-class SensorData(BaseModel):
-    """Input payload dari sensor lingkungan ruangan."""
-    hum: float = Field(..., description="Humidity (%)")
-    temp: float = Field(..., description="Temperature (°C)")
-    noise: float = Field(..., description="Noise level (dB)")
-    light_level: float = Field(..., description="Light level (lux)")
-    occupancy: int = Field(..., description="Number of occupants")
-    fan: ACFanSpeed = Field(..., description="Fan speed: 'low', 'medium', 'high', 'auto', 'quiet'")
 
 
 class ACControl(BaseModel):
